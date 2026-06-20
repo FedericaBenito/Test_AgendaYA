@@ -1,4 +1,4 @@
-name: CI - Tests Unitarios M06
+name: CI
 
 #fefi
 on:
@@ -6,26 +6,43 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v4.2.2
+      - name: Checkout código
+        uses: actions/checkout@v4
 
-      - name: Configurar Java 21
-        uses: actions/setup-java@v4.7.1
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
         with:
-          java-version: '21'
           distribution: 'temurin'
+          java-version: '21'
 
-      - name: Dar permisos al wrapper de Gradle
+      - name: Dar permisos de ejecución a gradlew
         run: chmod +x gradlew
 
-      - name: Ejecutar tests unitarios
-        run: ./gradlew test
+      - name: Cachear dependencias de Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-      - name: Build del proyecto
-        run: ./gradlew build
+      - name: Correr tests
+        run: ./gradlew test --no-daemon
+
+      - name: Publicar reporte de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            build/reports/tests/test
+            build/test-results/test
