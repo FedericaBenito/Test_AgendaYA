@@ -2,9 +2,9 @@ name: CI - Tests Unitarios M06
 
 on:
   push:
-    branches: [ "principal" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "principal" ]
+    branches: [ "main" ]
 
 jobs:
   test:
