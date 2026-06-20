@@ -10,6 +10,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 
 public class ReservaService {
 
@@ -126,6 +133,63 @@ public class ReservaService {
                 "Se canceló correctamente la cita",
                 reserva
         );
+    }
+
+        public List<LocalDate> visualizarFechasDisponibles(
+            Map<LocalDate, List<LocalTime>> disponibilidad,
+            Set<LocalDateTime> horariosOcupados
+    ) {
+        if (disponibilidad == null || disponibilidad.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Set<LocalDateTime> ocupados = horariosOcupados == null
+                ? Collections.emptySet()
+                : horariosOcupados;
+
+        return disponibilidad.entrySet()
+                .stream()
+                .filter(entry -> tieneAlMenosUnHorarioLibre(entry.getKey(), entry.getValue(), ocupados))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+    }
+
+    public boolean verificarDisponibilidad(
+            LocalDateTime fechaHora,
+            Set<LocalDateTime> horariosDisponibles,
+            Set<LocalDateTime> horariosOcupados
+    ) {
+        if (fechaHora == null) {
+            return false;
+        }
+
+        if (fechaHora.isBefore(LocalDateTime.now(clock))) {
+            return false;
+        }
+
+        Set<LocalDateTime> disponibles = horariosDisponibles == null
+                ? Collections.emptySet()
+                : horariosDisponibles;
+
+        Set<LocalDateTime> ocupados = horariosOcupados == null
+                ? Collections.emptySet()
+                : horariosOcupados;
+
+        return disponibles.contains(fechaHora) && !ocupados.contains(fechaHora);
+    }
+
+    private boolean tieneAlMenosUnHorarioLibre(
+            LocalDate fecha,
+            List<LocalTime> horarios,
+            Set<LocalDateTime> horariosOcupados
+    ) {
+        if (horarios == null || horarios.isEmpty()) {
+            return false;
+        }
+
+        return horarios.stream()
+                .map(hora -> LocalDateTime.of(fecha, hora))
+                .anyMatch(fechaHora -> !horariosOcupados.contains(fechaHora));
     }
 
     private void enviarMailConfirmacionCliente(Reserva reserva) {
