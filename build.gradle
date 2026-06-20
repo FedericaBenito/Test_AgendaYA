@@ -27,7 +27,4 @@ tasks.withType(JavaCompile).configureEach {
 test {
     useJUnitPlatform()
     systemProperty 'file.encoding', 'UTF-8'
-    filter {
-        includeTestsMatching 'agendaya.service.US*_*Test'
-    }
 }
