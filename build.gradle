@@ -5,6 +5,12 @@ plugins {
 group = 'agendaya'
 version = '1.0'
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -14,6 +20,14 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
 test {
     useJUnitPlatform()
+    systemProperty 'file.encoding', 'UTF-8'
+    filter {
+        includeTestsMatching 'agendaya.service.US*_*Test'
+    }
 }
