@@ -1,0 +1,30 @@
+name: CI - Tests Unitarios M06
+
+on:
+  push:
+    branches: [ "principal" ]
+  pull_request:
+    branches: [ "principal" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Dar permisos al wrapper de Gradle
+        run: chmod +x gradlew
+
+      - name: Ejecutar tests unitarios
+        run: ./gradlew test
+
+      - name: Build del proyecto
+        run: ./gradlew build
