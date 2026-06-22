@@ -1,21 +1,79 @@
 package agendaya.service.Notificacion;
 
-public class NotificacionService {
-    
-    public boolean enviarConfirmacionProfesional(String email){
+import java.util.ArrayList;
+import java.util.List;
 
+public class NotificacionService {
+
+    // ==========================================
+    // CÓDIGO DE LUCY (US-01, US-02, US-03)
+    // ==========================================
+    public boolean enviarConfirmacionProfesional(String email){
         return true;
     }
-
 
     public boolean enviarConfirmacionCliente(String email){
-
         return true;
     }
-
 
     public boolean notificarCancelacionProfesional(String email){
-
         return true;
     }
+
+
+    // ==========================================
+    // TU CÓDIGO - MARCO (US-04, US-05, US-06)
+    // ==========================================
+
+    // Listas para que los tests puedan verificar qué se envió
+    private List<String> correosEnviados = new ArrayList<>();
+    private List<String> asuntosEnviados = new ArrayList<>();
+    private List<String> cuerposEnviados = new ArrayList<>();
+
+    // US-04: Cliente cancela -> Notificamos al Profesional
+    public void notificarCancelacionAProfesional(String numReserva, String nombreCliente, String fecha, String hora, String emailProfesional) {
+        String asunto = "CANCELACIÓN RESERVA NÚMERO " + numReserva;
+
+        if (asuntosEnviados.contains(asunto)) return; // Evita duplicados
+
+        String cuerpo = "Le informamos que la reserva " + numReserva + " ha sido cancelada por el cliente " + nombreCliente + " con fecha " + fecha + " y hora: " + hora + ".";
+        registrarEnvio(emailProfesional, asunto, cuerpo);
+    }
+
+    // US-05: Profesional reagenda -> Notificamos al Cliente
+    public void notificarReagendadoACliente(String numReserva, String nombreCliente, String fechaAnt, String fechaNva, String horaAnt, String horaNva, String modalidad, String emailCliente, boolean usaPlantillaPersonalizada, String asuntoCustom, String cuerpoCustom) {
+        long startTime = System.currentTimeMillis();
+
+        String asunto = usaPlantillaPersonalizada ? asuntoCustom : "REAGENDADO DE RESERVA " + numReserva;
+        String cuerpo = usaPlantillaPersonalizada ? cuerpoCustom :
+                "Reserva Re-agendada\nHola " + nombreCliente + ", hemos actualizado los detalles de su reserva.\n" +
+                        "DETALLES DE LA RESERVA\nFecha " + fechaAnt + " a " + fechaNva + "\n" +
+                        "Hora " + horaAnt + " a " + horaNva + "\nModalidad " + modalidad + "\nReferencia " + numReserva;
+
+        registrarEnvio(emailCliente, asunto, cuerpo);
+
+        if ((System.currentTimeMillis() - startTime) >= 5000) {
+            throw new RuntimeException("El envío tardó más de 5 segundos");
+        }
+    }
+
+    // US-06: Profesional cancela -> Notificamos al Cliente
+    public void notificarCancelacionACliente(String numReserva, String fecha, String hora, String emailCliente) {
+        String asunto = "CANCELACIÓN RESERVA NÚMERO " + numReserva;
+
+        if (asuntosEnviados.contains(asunto)) return; // Evita duplicados
+
+        String cuerpo = "Le informamos que la reserva " + numReserva + " con fecha " + fecha + " y hora: " + hora + " ha sido cancelada por el profesional.";
+        registrarEnvio(emailCliente, asunto, cuerpo);
+    }
+
+    private void registrarEnvio(String email, String asunto, String cuerpo) {
+        correosEnviados.add(email);
+        asuntosEnviados.add(asunto);
+        cuerposEnviados.add(cuerpo);
+    }
+
+    public List<String> getCorreosEnviados() { return correosEnviados; }
+    public List<String> getAsuntosEnviados() { return asuntosEnviados; }
+    public List<String> getCuerposEnviados() { return cuerposEnviados; }
 }
